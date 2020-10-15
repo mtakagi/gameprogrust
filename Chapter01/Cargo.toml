@@ -1,0 +1,13 @@
+[package]
+name = "game"
+version = "0.1.0"
+authors = ["mtakagi <mtakagi127@live.jp>"]
+
+[dependencies.sdl2]
+    version = "0.34.3"
+    default-features = false
+    features = ["image"]
+
+[[bin]]
+name = "game"
+path = "src/main.rs"
