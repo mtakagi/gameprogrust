@@ -22,7 +22,7 @@ impl Game {
         return Ok(Game {sdl_context: sdl_context, window: window, is_running: true});
     }
 
-    pub fn runloop(&self)
+    pub fn runloop(&mut self)
     {
         while self.is_running {
             self.proccess_input();
@@ -36,9 +36,20 @@ impl Game {
 
     }
 
-    fn proccess_input(&self)
+    fn proccess_input(&mut self)
     {
+        let mut event_pump = self.sdl_context.event_pump().unwrap();
 
+        for event in event_pump.poll_iter() {
+            match event {
+                sdl2::event::Event::Quit { .. }
+                | sdl2::event::Event::KeyDown {
+                    keycode: Some(sdl2::keyboard::Keycode::Escape),
+                    ..
+                } => self.is_running = false,
+                _ => {}
+            }
+        }
     }
 
     fn update_game(&self)
