@@ -21,43 +21,52 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new() -> Result<Game, String>
-    {
+    pub fn new() -> Result<Game, String> {
         let sdl_context = sdl2::init()?;
         let video_subsystem = sdl_context.video()?;
         let timer_subsystem = sdl_context.timer()?;
 
         let window = video_subsystem
-                        .window("Game Programming in C++ (Chapter 1)", 1024, 768)
-                        .position(100, 100)
-                        .opengl()
-                        .build()
-                        .unwrap();
+            .window("Game Programming in C++ (Chapter 1)", 1024, 768)
+            .position(100, 100)
+            .opengl()
+            .build()
+            .unwrap();
 
-                                        
-        let canvas = window.into_canvas()
-                                .accelerated()
-                                .present_vsync()
-                                .build()
-                                .unwrap();
+        let canvas = window
+            .into_canvas()
+            .accelerated()
+            .present_vsync()
+            .build()
+            .unwrap();
 
-        let paddle_position = Vector2 { x: 10.0, y: 768.0 / 2.0 };
-        let ball_position = Vector2 { x: 1024.0/2.0, y: 768.0/2.0 };
-        let ball_velocity = Vector2 { x: -200.0, y: 235.0 };
+        let paddle_position = Vector2 {
+            x: 10.0,
+            y: 768.0 / 2.0,
+        };
+        let ball_position = Vector2 {
+            x: 1024.0 / 2.0,
+            y: 768.0 / 2.0,
+        };
+        let ball_velocity = Vector2 {
+            x: -200.0,
+            y: 235.0,
+        };
 
-        return Ok(Game {sdl_context: sdl_context,
-                        canvas: canvas,
-                        timer: timer_subsystem,
-                        tick_count: 0,
-                        is_running: true,
-                        paddle_position: paddle_position,
-                        paddle_direction: 0 ,
-                        ball_position: ball_position,
-                        ball_velocity: ball_velocity});
+        return Ok(Game {
+            sdl_context: sdl_context,
+            canvas: canvas,
+            timer: timer_subsystem,
+            tick_count: 0,
+            is_running: true,
+            paddle_position: paddle_position,
+            paddle_direction: 0,
+            ball_position: ball_position,
+            ball_velocity: ball_velocity,
+        });
     }
 
-    pub fn runloop(&mut self)
-    {
+    pub fn runloop(&mut self) {
         while self.is_running {
             self.proccess_input();
             self.update_game();
@@ -65,8 +74,7 @@ impl Game {
         }
     }
 
-    fn proccess_input(&mut self)
-    {
+    fn proccess_input(&mut self) {
         let mut event_pump = self.sdl_context.event_pump().unwrap();
 
         for event in event_pump.poll_iter() {
@@ -91,8 +99,7 @@ impl Game {
         }
     }
 
-    fn update_game(&mut self)
-    {
+    fn update_game(&mut self) {
         loop {
             if (self.tick_count + 16).wrapping_sub(self.timer.ticks()) > 0 {
                 break;
@@ -123,11 +130,16 @@ impl Game {
         let mut diff = self.paddle_position.y - self.ball_position.y;
         diff = if diff > 0.0 { diff } else { -diff };
 
-        if diff <= PADDLE_HEIGHT / 2.0 as f32 && self.ball_position.x <= 25.0 && self.ball_position.x >= 20.0 && self.ball_velocity.x < 0.0 {
+        if diff <= PADDLE_HEIGHT / 2.0 as f32
+            && self.ball_position.x <= 25.0
+            && self.ball_position.x >= 20.0
+            && self.ball_velocity.x < 0.0
+        {
             self.ball_velocity.x *= -1.0;
         } else if self.ball_position.x <= 0.0 {
             self.is_running = false;
-        } else if self.ball_position.x >= (1024.0 - THICKNESS as f32) && self.ball_velocity.x > 0.0 {
+        } else if self.ball_position.x >= (1024.0 - THICKNESS as f32) && self.ball_velocity.x > 0.0
+        {
             self.ball_velocity.x *= -1.0;
         }
 
@@ -138,22 +150,27 @@ impl Game {
         }
     }
 
-    fn generate_output(&mut self)
-    {
+    fn generate_output(&mut self) {
         let mut wall = sdl2::rect::Rect::new(0, 0, 1024, THICKNESS);
-        let ball = sdl2::rect::Rect::new((self.ball_position.x - (THICKNESS / 2) as f32) as i32,
-                                         (self.ball_position.y - (THICKNESS / 2) as f32) as i32,
-                                         THICKNESS,
-                                         THICKNESS);
-        let paddle = sdl2::rect::Rect::new(self.paddle_position.x as i32,
-                                           (self.paddle_position.y - PADDLE_HEIGHT / 2.0) as i32,
-                                            THICKNESS,
-                                            PADDLE_HEIGHT as u32);
+        let ball = sdl2::rect::Rect::new(
+            (self.ball_position.x - (THICKNESS / 2) as f32) as i32,
+            (self.ball_position.y - (THICKNESS / 2) as f32) as i32,
+            THICKNESS,
+            THICKNESS,
+        );
+        let paddle = sdl2::rect::Rect::new(
+            self.paddle_position.x as i32,
+            (self.paddle_position.y - PADDLE_HEIGHT / 2.0) as i32,
+            THICKNESS,
+            PADDLE_HEIGHT as u32,
+        );
 
-        self.canvas.set_draw_color(sdl2::pixels::Color::RGBA(0, 0, 255, 255));
+        self.canvas
+            .set_draw_color(sdl2::pixels::Color::RGBA(0, 0, 255, 255));
         self.canvas.clear();
-        self.canvas.set_draw_color(sdl2::pixels::Color::RGBA(255, 255, 255, 255));
-        
+        self.canvas
+            .set_draw_color(sdl2::pixels::Color::RGBA(255, 255, 255, 255));
+
         let _ = self.canvas.fill_rect(wall);
 
         wall.set_y(768 - THICKNESS as i32);
