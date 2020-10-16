@@ -11,7 +11,10 @@ struct Vector2 {
 pub struct Game {
     sdl_context: sdl2::Sdl,
     canvas: sdl2::render::Canvas<sdl2::video::Window>,
+    timer: sdl2::TimerSubsystem,
     is_running: bool,
+    tick_count: u32,
+    paddle_direction: i32,
     paddle_position: Vector2,
     ball_position: Vector2,
 }
@@ -21,6 +24,7 @@ impl Game {
     {
         let sdl_context = sdl2::init()?;
         let video_subsystem = sdl_context.video()?;
+        let timer_subsystem = sdl_context.timer()?;
 
         let window = video_subsystem
                         .window("Game Programming in C++ (Chapter 1)", 1024, 768)
@@ -38,8 +42,8 @@ impl Game {
 
         let paddle_position = Vector2 { x: 10.0, y: 768.0 / 2.0 };
         let ball_position = Vector2 { x: 1024.0/2.0, y: 768.0/2.0 };
-        
-        return Ok(Game {sdl_context: sdl_context, canvas: canvas, is_running: true, paddle_position: paddle_position ,ball_position: ball_position});
+
+        return Ok(Game {sdl_context: sdl_context, canvas: canvas, timer: timer_subsystem, tick_count: 0, is_running: true, paddle_position: paddle_position, paddle_direction: 0 ,ball_position: ball_position});
     }
 
     pub fn runloop(&mut self)
@@ -70,11 +74,43 @@ impl Game {
                 _ => {}
             }
         }
+
+        let keyboard_state = event_pump.keyboard_state();
+
+        self.paddle_direction = 0;
+
+        if keyboard_state.is_scancode_pressed(sdl2::keyboard::Scancode::W) {
+            self.paddle_direction -= 1;
+        } else if keyboard_state.is_scancode_pressed(sdl2::keyboard::Scancode::S) {
+            self.paddle_direction += 1;
+        }
     }
 
-    fn update_game(&self)
+    fn update_game(&mut self)
     {
+        loop {
+            if (self.tick_count + 16).wrapping_sub(self.timer.ticks()) > 0 {
+                break;
+            }
+        }
 
+        let mut delta_time = (self.timer.ticks() - self.tick_count) as f32 / 1000.0;
+
+        if delta_time > 0.05 {
+            delta_time = 0.05;
+        }
+
+        self.tick_count = self.timer.ticks();
+
+        if self.paddle_direction != 0 {
+            self.paddle_position.y += self.paddle_direction as f32 * 300.0 * delta_time;
+
+            if self.paddle_position.y < (PADDLE_HEIGHT / 2.0 + THICKNESS as f32) {
+                self.paddle_position.y = PADDLE_HEIGHT / 2.0 + THICKNESS as f32;
+            } else if self.paddle_position.y > (768.0 - PADDLE_HEIGHT / 2.0 - THICKNESS as f32) {
+                self.paddle_position.y = 768.0 - PADDLE_HEIGHT / 2.0 - THICKNESS as f32
+            }
+        }
     }
 
     fn generate_output(&mut self)
