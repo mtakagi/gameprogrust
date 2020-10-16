@@ -17,6 +17,7 @@ pub struct Game {
     paddle_direction: i32,
     paddle_position: Vector2,
     ball_position: Vector2,
+    ball_velocity: Vector2,
 }
 
 impl Game {
@@ -42,8 +43,17 @@ impl Game {
 
         let paddle_position = Vector2 { x: 10.0, y: 768.0 / 2.0 };
         let ball_position = Vector2 { x: 1024.0/2.0, y: 768.0/2.0 };
+        let ball_velocity = Vector2 { x: -200.0, y: 235.0 };
 
-        return Ok(Game {sdl_context: sdl_context, canvas: canvas, timer: timer_subsystem, tick_count: 0, is_running: true, paddle_position: paddle_position, paddle_direction: 0 ,ball_position: ball_position});
+        return Ok(Game {sdl_context: sdl_context,
+                        canvas: canvas,
+                        timer: timer_subsystem,
+                        tick_count: 0,
+                        is_running: true,
+                        paddle_position: paddle_position,
+                        paddle_direction: 0 ,
+                        ball_position: ball_position,
+                        ball_velocity: ball_velocity});
     }
 
     pub fn runloop(&mut self)
@@ -53,11 +63,6 @@ impl Game {
             self.update_game();
             self.generate_output();
         }
-    }
-
-    pub fn shutdown(&self)
-    {
-
     }
 
     fn proccess_input(&mut self)
@@ -110,6 +115,26 @@ impl Game {
             } else if self.paddle_position.y > (768.0 - PADDLE_HEIGHT / 2.0 - THICKNESS as f32) {
                 self.paddle_position.y = 768.0 - PADDLE_HEIGHT / 2.0 - THICKNESS as f32
             }
+        }
+
+        self.ball_position.x += self.ball_velocity.x * delta_time;
+        self.ball_position.y += self.ball_velocity.y * delta_time;
+
+        let mut diff = self.paddle_position.y - self.ball_position.y;
+        diff = if diff > 0.0 { diff } else { -diff };
+
+        if diff <= PADDLE_HEIGHT / 2.0 as f32 && self.ball_position.x <= 25.0 && self.ball_position.x >= 20.0 && self.ball_velocity.x < 0.0 {
+            self.ball_velocity.x *= -1.0;
+        } else if self.ball_position.x <= 0.0 {
+            self.is_running = false;
+        } else if self.ball_position.x >= (1024.0 - THICKNESS as f32) && self.ball_velocity.x > 0.0 {
+            self.ball_velocity.x *= -1.0;
+        }
+
+        if self.ball_position.y <= THICKNESS as f32 && self.ball_velocity.y < 0.0 {
+            self.ball_velocity.y *= -1.0;
+        } else if self.ball_position.y >= 768.0 - THICKNESS as f32 && self.ball_velocity.y > 0.0 {
+            self.ball_velocity.y *= -1.0;
         }
     }
 
