@@ -2,7 +2,7 @@ extern crate sdl2;
 
 pub struct Game {
     sdl_context: sdl2::Sdl,
-    window: sdl2::video::Window,
+    canvas: sdl2::render::Canvas<sdl2::video::Window>,
     is_running: bool,
 }
 
@@ -18,8 +18,19 @@ impl Game {
                         .opengl()
                         .build()
                         .unwrap();
+
+                                        
+        let mut canvas = window.into_canvas()
+                                .accelerated()
+                                .present_vsync()
+                                .build()
+                                .unwrap();
+
+        canvas.set_draw_color(sdl2::pixels::Color::RGBA(0, 0, 255, 255));
+        canvas.clear();
+        canvas.present();
         
-        return Ok(Game {sdl_context: sdl_context, window: window, is_running: true});
+        return Ok(Game {sdl_context: sdl_context, canvas: canvas, is_running: true});
     }
 
     pub fn runloop(&mut self)
