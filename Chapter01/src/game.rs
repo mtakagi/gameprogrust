@@ -27,7 +27,7 @@ impl Game {
         let timer_subsystem = sdl_context.timer()?;
 
         let window = video_subsystem
-            .window("Game Programming in C++ (Chapter 1)", 1024, 768)
+            .window("Game Programming in Rust (Chapter 1)", 1024, 768)
             .position(100, 100)
             .opengl()
             .build()
